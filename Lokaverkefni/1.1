@@ -1,0 +1,12 @@
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  //Cannot fix the error from Serial.println(reply, byte);
+byte reply;
+if (Serial.available()){
+  reply = Serial.read();
+  Serial.println(reply, byte);
+}
+}

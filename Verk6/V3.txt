@@ -1,0 +1,18 @@
+ADAFRUIT_IO_USERNAME = "Vastly"                                                                                         
+ADAFRUIT_IO_KEY = "aio_upxL356BUIdHdHUCqGIIjmMELKt9"                                                                    
+from Adafruit_IO import Client, Feed, Data, RequestError                                                                
+from time import sleep                                                                                                  
+from gpiozero import LED                                                                                                
+aio = Client(ADAFRUIT_IO_USERNAME, ADAFRUIT_IO_KEY)
+
+led = LED(17)
+led.on()     
+
+while True:                                                                                                                     
+	data = aio.receive("button")                                                                                            
+	switch = int(data.value)                                                                                                
+	if switch == 1: #On                                                                                                             
+		led.on()                                                                                                        
+	else:           #OFF                                                                                                            
+		led.off()                                                                                                       
+	sleep(1)        

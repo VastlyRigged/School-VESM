@@ -1,0 +1,31 @@
+#include <AdafruitIO_WiFi.h>
+
+#define IO_USERNAME "Vastly"
+#define IO_KEY "aio_upxL356BUIdHdHUCqGIIjmMELKt9"
+
+#define WIFI_SSID "Siminn118CED"
+#define WIFI_PASS "VK6QFDJP59"
+#define Light 2
+AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
+
+AdafruitIO_Feed *feed = io.feed("meter");
+// set up the 'digital' feed
+
+
+void setup() {
+  Serial.begin(115200);
+
+  delay(1000);
+}
+
+void loop() {
+  int val = analogRead(Light);
+  Serial.print("L:");
+  Serial.print(Light);
+  Serial.print(", VAL:");
+  Serial.println(val);
+  io.run();
+  feed->save(val);
+  delay(3000);
+  
+}

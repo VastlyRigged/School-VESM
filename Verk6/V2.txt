@@ -1,0 +1,23 @@
+ADAFRUIT_IO_USERNAME = "Vastly"                                                                                         
+ADAFRUIT_IO_KEY = "aio_upxL356BUIdHdHUCqGIIjmMELKt9"                                                                    
+from Adafruit_IO import Client, Feed, Data, RequestError                                                                
+from time import sleep                                                                                                  
+from gpiozero import Button                                                                                             
+from signal import pause                                                                                                
+aio = Client(ADAFRUIT_IO_USERNAME, ADAFRUIT_IO_KEY)                                                                                                                                                                                             
+
+def ON():                                                                                                                       
+	on = Data(value = 1)                                                                                                    
+	print("ON")                                                                                                             
+	aio.create_data("toggle", on)                                                                                   
+def OFF():                                                                                                                      
+	off = Data(value = 0)                                                                                                   
+	print("OFF")                                                                                                            
+	aio.create_data("toggle", off)                                                                                  
+off = Data(value = 0)                                                                                                   
+on = Data(value = 1)                                                                                                    
+button = Button(17)                                                                                                     
+print("Start")                                                                                                                                                                                                                                  
+button.when_activated = ON                                                                                              
+button.when_deactivated = OFF                                                                                           
+pause()                                                                                                                                    

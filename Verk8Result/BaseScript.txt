@@ -1,0 +1,85 @@
+
+ADAFRUIT_IO_USERNAME = "Vastly"
+ADAFRUIT_IO_KEY = "aio_ezxf37beUVShAp1bRTP52x2SbAA2"
+from Adafruit_IO import Client, Feed, Data, RequestError
+from time import sleep
+import gpiozero
+import Adafruit_DHT
+import sys
+import RPi.GPIO as GPIO
+sys.path.insert(1, "/home/pi/Documents/Verk8/Functions")
+from signal import pause
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(18, GPIO.OUT)
+GPIO.output(18, False)
+from light import main as scan_light
+from temp import main as scan_temp
+from soil import main as scan_soil
+low_Moist = int(400)
+aio = Client(ADAFRUIT_IO_USERNAME, ADAFRUIT_IO_KEY)
+data = aio.receive("button")
+DHT_SENSOR = Adafruit_DHT.DHT11
+DHT_PIN = 17
+
+print ("Start")
+
+
+#Clear the active pins before exiting the script.
+import signal
+def keyboardInterruptHandler(signal, frame):
+	print ("\nShuting Down...")
+	GPIO.output(18, False)
+	exit()
+signal.signal(signal.SIGINT, keyboardInterruptHandler)
+#Check if adafruit allows the script to perform it's main functions.
+def operate_inspection():
+	switch = int(data.value)
+	if switch == 1:
+		return True
+	else:
+		return False
+
+inspect = operate_inspection()
+#The main functions.
+while True:
+	data = aio.receive("button")
+	inspect = operate_inspection()
+	while inspect:
+		data = aio.receive("button")
+		inspect = operate_inspection()
+		#Temperature
+		heat_feedback = scan_temp()
+		if heat_feedback != None:
+			print ("Temperature = {}C°".format(heat_feedback))
+			send = Data(value = heat_feedback)
+			aio.create_data("temperature", send)
+		else:
+			print ("ERROR: \n        I2C soil temperature sensor faulty wiring")
+		#Soil
+		mud_feedback = scan_soil()
+		if mud_feedback != None:
+			print ("Moisture Meter = {}".format(mud_feedback))
+			send = Data(value = mud_feedback)
+			aio.create_data("moist-meter", send)
+		else:
+			print ("ERROR: \n	I2C soil moist meter faulty wiring")
+		#Light
+		brightness_feedback = scan_light()
+		if brightness_feedback != None:
+			print ("Brightness Level = {} lux|".format(brightness_feedback), type(brightness_feedback))
+			send = Data(value = brightness_feedback)
+			aio.create_data("light", send)
+		else:
+			print ("ERROR: \n	BH1750 faulty wiring")
+		sleep(1)
+		#Moisture
+		if mud_feedback != None:
+			if mud_feedback <= 445:
+				print ("Watering...")
+				GPIO.output(18, True)
+			else:
+				GPIO.output(18, False)
+		else:
+			GPIO.output(18, False)
+	sleep(1)
